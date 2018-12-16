@@ -7,23 +7,23 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.zxing.client.android.Intents;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.InputStream;
-import java.util.Iterator;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String warenName;
-    private TextView previewField;
+    private CellAddress address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +50,23 @@ public class MainActivity extends AppCompatActivity {
         integrator.initiateScan();
     }
 
-    private void saveQRCode(String name) {
-        warenName = name;
-        readExcel();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == IntentIntegrator.REQUEST_CODE
+                && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                saveQRCode(Objects.requireNonNull(extras.getString(Intents.Scan.RESULT)));
+                augmentWare();
+            }
+        }
     }
 
-    private void readExcel() {
-        previewField = findViewById(R.id.previewField);
+    private void saveQRCode(String scannedName) {
+        searchWareInExcel(scannedName);
+    }
+
+    private void searchWareInExcel(String scannedName) {
         try {
             InputStream myInput;
             // initialize asset manager
@@ -67,40 +77,49 @@ public class MainActivity extends AppCompatActivity {
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
             // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-            // Get iterator to all the rows in current sheet
-            Iterator rowIterator = mySheet.iterator();
+
             // Traversing over each row of XLSX file
-            while (rowIterator.hasNext())
-            {
-                Row row = (Row) rowIterator.next();
-                // For each row, iterate through each columns
-                Iterator cellIterator = row.cellIterator();
-                while (cellIterator.hasNext()) {
-                    Cell cell = (Cell) cellIterator.next();
-                    switch (cell.getCellType()) {
-                        case Cell.CELL_TYPE_STRING: previewField.append(cell.getStringCellValue());
-                            break;
-                        case Cell.CELL_TYPE_NUMERIC: previewField.append(String.valueOf(cell.getNumericCellValue()));
-                            break;
-                        case Cell.CELL_TYPE_BOOLEAN: previewField.append(String.valueOf(cell.getBooleanCellValue()));
-                            break;
-                        default : }
+            for (Row myRow : mySheet) {
+                for (Cell myCell : myRow) {
+                    if (getCellAddress(scannedName, myCell)) break;
                 }
             }
         } catch (Exception e) {
-            Log.e("Stuff: ", "error "+ e.toString());
+            Log.e("ERROR: ", "error "+ e.toString());
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == IntentIntegrator.REQUEST_CODE
-                && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            assert extras != null;
-            saveQRCode(extras.getString(Intents.Scan.RESULT));
+    private boolean getCellAddress(String scannedName, Cell myCell) {
+        if(myCell.getCellTypeEnum() == CellType.STRING){
+            if (scannedName.substring(7).equals(myCell.getStringCellValue())){
+                saveAddress(myCell.getAddress());
+                return true;
+            }
         }
+        return false;
     }
 
+    private void saveAddress(CellAddress address) {
+        this.address = address;
+    }
 
+    private void augmentWare() {
+        try {
+            InputStream myInput;
+            // initialize asset manager
+            AssetManager assetManager = getAssets();
+            //  open excel sheet
+            myInput = assetManager.open("inventar.xlsx");
+            // Finds the workbook instance for XLSX file
+            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+            // Return first sheet from the XLSX workbook
+            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+
+            Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
+            cellToChange.setCellValue(cellToChange.getNumericCellValue() + 1);
+
+        } catch (Exception e) {
+            Log.e("ERROR: ", "error "+ e.toString());
+        }
+    }
 }
