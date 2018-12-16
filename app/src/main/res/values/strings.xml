@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Lagerverwalung</string>
+    <string name="suche">Suche...</string>
+    <string name="hinzuf_gen">Hinzufügen</string>
+    <string name="entfernen">Entfernen</string>
+    <string name="einkauf_vorschau">Einkauf Vorschau</string>
+    <string name="neu">Neu</string>
+    <string name="vorschau">Vorschau</string>
+</resources>
