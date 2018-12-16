@@ -9,6 +9,16 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    dexOptions {
+        //incremental = true;
+        preDexLibraries = false
+        javaMaxHeapSize "4g"
+    }
+    packagingOptions {
+        exclude 'META-INF/NOTICE.txt' // will not include NOTICE file
+        exclude 'META-INF/LICENSE.txt' // will not include LICENSE file
     }
     buildTypes {
         release {
@@ -30,4 +40,8 @@ dependencies {
     implementation ('com.journeyapps:zxing-android-embedded:3.3.0') {
         exclude group: "com.android.support"
     }
+
+    // Excel (xls) read/write library
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation files('libs/poishadow-all.jar')
 }
