@@ -63,24 +63,28 @@ public class MainActivity extends AppCompatActivity {
             AssetManager assetManager = getAssets();
             //  open excel sheet
             myInput = assetManager.open("inventar.xlsx");
-// Finds the workbook instance for XLSX file
+            // Finds the workbook instance for XLSX file
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-// Return first sheet from the XLSX workbook
+            // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-// Get iterator to all the rows in current sheet
+            // Get iterator to all the rows in current sheet
             Iterator rowIterator = mySheet.iterator();
-// Traversing over each row of XLSX file
+            // Traversing over each row of XLSX file
             while (rowIterator.hasNext())
             {
                 Row row = (Row) rowIterator.next();
-// For each row, iterate through each columns
+                // For each row, iterate through each columns
                 Iterator cellIterator = row.cellIterator();
                 while (cellIterator.hasNext()) {
                     Cell cell = (Cell) cellIterator.next();
-                    switch (cell.getCellType()) { case Cell.CELL_TYPE_STRING: System.out.print(cell.getStringCellValue() + "\t");
-                        break; case Cell.CELL_TYPE_NUMERIC:System.out.print(cell.getNumericCellValue() + "\t");
-                        break; case Cell.CELL_TYPE_BOOLEAN: System.out.print(cell.getBooleanCellValue() + "\t");
-                        break; default : }
+                    switch (cell.getCellType()) {
+                        case Cell.CELL_TYPE_STRING: previewField.append(cell.getStringCellValue());
+                            break;
+                        case Cell.CELL_TYPE_NUMERIC: previewField.append(String.valueOf(cell.getNumericCellValue()));
+                            break;
+                        case Cell.CELL_TYPE_BOOLEAN: previewField.append(String.valueOf(cell.getBooleanCellValue()));
+                            break;
+                        default : }
                 }
             }
         } catch (Exception e) {
