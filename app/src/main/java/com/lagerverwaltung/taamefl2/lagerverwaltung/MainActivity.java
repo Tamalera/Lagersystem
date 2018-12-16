@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.zxing.client.android.Intents;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -22,8 +23,6 @@ import java.io.InputStream;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-
-    private CellAddress address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,70 +55,10 @@ public class MainActivity extends AppCompatActivity {
                 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             if (extras != null) {
-                saveQRCode(Objects.requireNonNull(extras.getString(Intents.Scan.RESULT)));
-                augmentWare();
+                ExcelChanges myExcel = new ExcelChanges(this);
+                myExcel.saveQRCode(Objects.requireNonNull(extras.getString(Intents.Scan.RESULT)));
+                myExcel.augmentWare();
             }
-        }
-    }
-
-    private void saveQRCode(String scannedName) {
-        searchWareInExcel(scannedName);
-    }
-
-    private void searchWareInExcel(String scannedName) {
-        try {
-            InputStream myInput;
-            // initialize asset manager
-            AssetManager assetManager = getAssets();
-            //  open excel sheet
-            myInput = assetManager.open("inventar.xlsx");
-            // Finds the workbook instance for XLSX file
-            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-            // Return first sheet from the XLSX workbook
-            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-
-            // Traversing over each row of XLSX file
-            for (Row myRow : mySheet) {
-                for (Cell myCell : myRow) {
-                    if (getCellAddress(scannedName, myCell)) break;
-                }
-            }
-        } catch (Exception e) {
-            Log.e("ERROR: ", "error "+ e.toString());
-        }
-    }
-
-    private boolean getCellAddress(String scannedName, Cell myCell) {
-        if(myCell.getCellTypeEnum() == CellType.STRING){
-            if (scannedName.substring(7).equals(myCell.getStringCellValue())){
-                saveAddress(myCell.getAddress());
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void saveAddress(CellAddress address) {
-        this.address = address;
-    }
-
-    private void augmentWare() {
-        try {
-            InputStream myInput;
-            // initialize asset manager
-            AssetManager assetManager = getAssets();
-            //  open excel sheet
-            myInput = assetManager.open("inventar.xlsx");
-            // Finds the workbook instance for XLSX file
-            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-            // Return first sheet from the XLSX workbook
-            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-
-            Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
-            cellToChange.setCellValue(cellToChange.getNumericCellValue() + 1);
-
-        } catch (Exception e) {
-            Log.e("ERROR: ", "error "+ e.toString());
         }
     }
 }
