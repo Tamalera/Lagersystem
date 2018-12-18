@@ -2,6 +2,8 @@ package com.lagerverwaltung.taamefl2.lagerverwaltung;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.os.Debug;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,18 +15,25 @@ import com.google.zxing.client.android.Intents;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.Objects;
+
+import static android.util.Log.println;
 
 public class MainActivity extends AppCompatActivity {
 
     private String buttonCode;
+    private ShoppingList shoppingList = new ShoppingList(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +58,29 @@ public class MainActivity extends AppCompatActivity {
                 scanQRCode();
             }
         });
+
+        final Button previewShoppingList = findViewById(R.id.shoppingListBtn);
+        previewShoppingList.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                showPreview(shoppingList.getPreview());
+            }
+        });
+
+        final Button addNewExcel = findViewById(R.id.addExcel);
+        addNewExcel.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CopyAssets();
+                showExcel();
+            }
+        });
+    }
+
+    private void showPreview(List<String> preview) {
+        TextView previewField = findViewById(R.id.previewField);
+        previewField.setText("");
+        for (String element: preview) {
+            previewField.append("\n" + element);
+        }
     }
 
     private void setButtonCode(String code) {
@@ -78,6 +110,48 @@ public class MainActivity extends AppCompatActivity {
                     myExcel.takeWare();
                 }
             }
+        }
+    }
+
+    private void CopyAssets() {
+        AssetManager assetManager = getAssets();
+        InputStream in;
+        OutputStream out;
+        try {
+            in = assetManager.open("inventar.xlsx");
+            out = new FileOutputStream(getFilesDir() + "/inventar.xlsx");
+            copyFile(in, out);
+            in.close();
+            out.flush();
+            out.close();
+        } catch(Exception e) {
+            Log.e("tag", e.getMessage());
+        }
+    }
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
+    }
+
+    private void showExcel(){
+        try {
+            FileInputStream myInput;
+            myInput = openFileInput("inventar.xlsx");
+            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+
+            for (Row row: mySheet) {
+                for (Cell myCell: row) {
+                    Log.i("CELL: ", myCell.toString());
+                }
+            }
+            myInput.close();
+
+        } catch (Exception e) {
+            Log.e("ERROR: ", "error "+ e.toString());
         }
     }
 }

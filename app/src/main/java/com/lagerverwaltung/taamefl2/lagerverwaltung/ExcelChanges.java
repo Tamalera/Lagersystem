@@ -1,6 +1,8 @@
 package com.lagerverwaltung.taamefl2.lagerverwaltung;
 
 import android.content.Context;
+import android.content.res.AssetManager;
+import android.os.Environment;
 import android.util.Log;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,7 +15,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExcelChanges {
 
@@ -31,11 +37,8 @@ public class ExcelChanges {
     public void augmentWare() {
         try {
             FileInputStream myInput;
-            //  open excel sheet
             myInput = context.openFileInput("inventar.xlsx");
-            // Finds the workbook instance for XLSX file
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-            // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
             if (this.address != null){
@@ -59,9 +62,7 @@ public class ExcelChanges {
             FileInputStream myInput;
             //  open excel sheet
             myInput = context.openFileInput("inventar.xlsx");
-            // Finds the workbook instance for XLSX file
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-            // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
             Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
@@ -69,6 +70,7 @@ public class ExcelChanges {
                 cellToChange.setCellValue(cellToChange.getNumericCellValue() - 1);
             }
             myInput.close();
+
             // Now write the output to a file
             FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
             myWorkBook.write(outFile);
@@ -79,15 +81,32 @@ public class ExcelChanges {
         }
     }
 
-    private void searchWareInExcel(String scannedName) {
+    public List<String> getAllItemsForShopping(){
+        List<String> shoppingList = new ArrayList<>();
         try {
             InputStream myInput;
-            //  open excel sheet
             myInput = context.openFileInput("inventar.xlsx");
-            // Finds the workbook instance for XLSX file
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-            // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+
+            for (Row row: mySheet) {
+                if (!checkIfCellTypeIsString(row.getCell(1))){
+                    if ((row.getCell(1).getNumericCellValue() <= row.getCell(2).getNumericCellValue())){
+                        shoppingList.add(row.getCell(0).getStringCellValue());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e("ERROR: ", "error "+ e.toString());
+        }
+
+        return shoppingList;
+    }
+
+    private void searchWareInExcel(String scannedName) {
+        try {
+            XSSFSheet mySheet = openExcelSheet();
 
             // Traversing over each row of XLSX file
             for (Row myRow : mySheet) {
@@ -99,8 +118,16 @@ public class ExcelChanges {
             Log.e("ERROR: ", "error "+ e.toString());
         }
     }
+
+    private XSSFSheet openExcelSheet() throws IOException {
+        InputStream myInput;
+        myInput = context.openFileInput("inventar.xlsx");
+        XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+        return myWorkBook.getSheetAt(0);
+    }
+
     private boolean getCellAddress(String scannedName, Cell myCell) {
-        if(myCell.getCellTypeEnum() == CellType.STRING){
+        if(checkIfCellTypeIsString(myCell)){
             if (scannedName.substring(7).equals(myCell.getStringCellValue())){
                 saveAddress(myCell.getAddress());
                 return true;
@@ -113,4 +140,7 @@ public class ExcelChanges {
         this.address = address;
     }
 
+    private boolean checkIfCellTypeIsString (Cell cell){
+        return cell.getCellTypeEnum() == CellType.STRING;
+    }
 }

@@ -55,6 +55,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/neu" />
+
+            <Button
+                android:id="@+id/addExcel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lade_excel"
+                android:enabled="false"/>
         </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
