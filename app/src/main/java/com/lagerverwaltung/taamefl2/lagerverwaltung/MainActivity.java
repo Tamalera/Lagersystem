@@ -1,12 +1,16 @@
 package com.lagerverwaltung.taamefl2.lagerverwaltung;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.zxing.client.android.Intents;
@@ -65,8 +69,9 @@ public class MainActivity extends AppCompatActivity {
         final Button addNewEntry = findViewById(R.id.newBtn);
         addNewEntry.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                myExcel.addNewEntry();
-                showExcel();
+                openPopup();
+                //myExcel.addNewEntry();
+                //showExcel();
             }
         });
 
@@ -77,6 +82,47 @@ public class MainActivity extends AppCompatActivity {
                 showExcel();
             }
         });
+    }
+
+    private void openPopup() {
+        LayoutInflater li = LayoutInflater.from(this);
+        View myPopup = li.inflate(R.layout.new_entry_form, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                this);
+
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(myPopup);
+        final EditText nameInput = myPopup.findViewById(R.id.nameInput);
+        final EditText numberInput = myPopup.findViewById(R.id.numberInput);
+        final EditText thresholdInput = myPopup.findViewById(R.id.thresholdInput);
+        final EditText commentInput = myPopup.findViewById(R.id.commentInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                //Todo: create Ware-Object
+                                Log.i("NAME: ", nameInput.getText().toString());
+                                Log.i("NUMBER: ", numberInput.getText().toString());
+                                Log.i("THRESHOLD: ", thresholdInput.getText().toString());
+                                Log.i("COMMENT: ", commentInput.getText().toString());
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     private void showPreview(List<String> preview) {

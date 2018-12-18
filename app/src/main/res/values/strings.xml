@@ -7,4 +7,8 @@
     <string name="neu">Neu</string>
     <string name="vorschau">Vorschau</string>
     <string name="lade_excel">Lade Excel</string>
+    <string name="comment">Comment :</string>
+    <string name="threshold">Threshold :</string>
+    <string name="number">Number :</string>
+    <string name="name">Name :</string>
 </resources>
