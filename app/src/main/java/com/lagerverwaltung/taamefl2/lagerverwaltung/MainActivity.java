@@ -24,6 +24,8 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String buttonCode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.setProperty("org.apache.poi.javax.xml.stream.XMLInputFactory", "com.fasterxml.aalto.stax.InputFactoryImpl");
@@ -35,9 +37,22 @@ public class MainActivity extends AppCompatActivity {
         final Button addWare = findViewById(R.id.addBtn);
         addWare.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                setButtonCode("add");
                 scanQRCode();
             }
         });
+
+        final Button removeWare = findViewById(R.id.removeBtn);
+        removeWare.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                setButtonCode("remove");
+                scanQRCode();
+            }
+        });
+    }
+
+    private void setButtonCode(String code) {
+        this.buttonCode = code;
     }
 
     private void scanQRCode() {
@@ -57,7 +72,11 @@ public class MainActivity extends AppCompatActivity {
             if (extras != null) {
                 ExcelChanges myExcel = new ExcelChanges(this);
                 myExcel.saveQRCode(Objects.requireNonNull(extras.getString(Intents.Scan.RESULT)));
-                myExcel.augmentWare();
+                if (this.buttonCode.equals("add")){
+                    myExcel.augmentWare();
+                } else if (this.buttonCode.equals("remove")){
+                    myExcel.takeWare();
+                }
             }
         }
     }

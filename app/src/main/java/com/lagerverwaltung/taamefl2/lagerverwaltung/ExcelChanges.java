@@ -38,8 +38,36 @@ public class ExcelChanges {
             // Return first sheet from the XLSX workbook
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
+            if (this.address != null){
+                Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
+                cellToChange.setCellValue(cellToChange.getNumericCellValue() + 1);
+            }
+
+            myInput.close();
+            // Now write the output to a file
+            FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
+            myWorkBook.write(outFile);
+            outFile.close();
+
+        } catch (Exception e) {
+            Log.e("ERROR: ", "error "+ e.toString());
+        }
+    }
+
+    public void takeWare() {
+        try {
+            FileInputStream myInput;
+            //  open excel sheet
+            myInput = context.openFileInput("inventar.xlsx");
+            // Finds the workbook instance for XLSX file
+            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+            // Return first sheet from the XLSX workbook
+            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+
             Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
-            cellToChange.setCellValue(cellToChange.getNumericCellValue() + 1);
+            if (cellToChange.getNumericCellValue() != 0){
+                cellToChange.setCellValue(cellToChange.getNumericCellValue() - 1);
+            }
             myInput.close();
             // Now write the output to a file
             FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
