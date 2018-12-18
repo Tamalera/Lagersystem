@@ -2,8 +2,6 @@ package com.lagerverwaltung.taamefl2.lagerverwaltung;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.os.Debug;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,7 +17,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,11 +25,10 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
-import static android.util.Log.println;
-
 public class MainActivity extends AppCompatActivity {
 
     private String buttonCode;
+    private ExcelChanges myExcel = new ExcelChanges(this);
     private ShoppingList shoppingList = new ShoppingList(this);
 
     @Override
@@ -63,6 +59,14 @@ public class MainActivity extends AppCompatActivity {
         previewShoppingList.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 showPreview(shoppingList.getPreview());
+            }
+        });
+
+        final Button addNewEntry = findViewById(R.id.newBtn);
+        addNewEntry.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                myExcel.addNewEntry();
+                showExcel();
             }
         });
 
@@ -102,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
                 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             if (extras != null) {
-                ExcelChanges myExcel = new ExcelChanges(this);
                 myExcel.saveQRCode(Objects.requireNonNull(extras.getString(Intents.Scan.RESULT)));
                 if (this.buttonCode.equals("add")){
                     myExcel.augmentWare();

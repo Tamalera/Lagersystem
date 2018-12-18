@@ -1,8 +1,6 @@
 package com.lagerverwaltung.taamefl2.lagerverwaltung;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.os.Environment;
 import android.util.Log;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -14,10 +12,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +32,7 @@ public class ExcelChanges {
 
     public void augmentWare() {
         try {
-            FileInputStream myInput;
-            myInput = context.openFileInput("inventar.xlsx");
+            FileInputStream myInput = getFileInputStream();
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
@@ -45,13 +40,11 @@ public class ExcelChanges {
                 Cell cellToChange = mySheet.getRow(this.address.getRow()).getCell(this.address.getColumn() + 1);
                 cellToChange.setCellValue(cellToChange.getNumericCellValue() + 1);
             }
-
             myInput.close();
             // Now write the output to a file
             FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
             myWorkBook.write(outFile);
             outFile.close();
-
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
@@ -59,9 +52,7 @@ public class ExcelChanges {
 
     public void takeWare() {
         try {
-            FileInputStream myInput;
-            //  open excel sheet
-            myInput = context.openFileInput("inventar.xlsx");
+            FileInputStream myInput = getFileInputStream();
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
@@ -70,22 +61,25 @@ public class ExcelChanges {
                 cellToChange.setCellValue(cellToChange.getNumericCellValue() - 1);
             }
             myInput.close();
-
             // Now write the output to a file
             FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
             myWorkBook.write(outFile);
             outFile.close();
-
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
     }
 
+    private FileInputStream getFileInputStream() throws FileNotFoundException {
+        FileInputStream myInput;
+        myInput = context.openFileInput("inventar.xlsx");
+        return myInput;
+    }
+
     public List<String> getAllItemsForShopping(){
         List<String> shoppingList = new ArrayList<>();
         try {
-            InputStream myInput;
-            myInput = context.openFileInput("inventar.xlsx");
+            FileInputStream myInput = getFileInputStream();
             XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
             XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
@@ -96,7 +90,7 @@ public class ExcelChanges {
                     }
                 }
             }
-
+            myInput.close();
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
@@ -104,9 +98,14 @@ public class ExcelChanges {
         return shoppingList;
     }
 
+    public void addNewEntry() {
+    }
+
     private void searchWareInExcel(String scannedName) {
         try {
-            XSSFSheet mySheet = openExcelSheet();
+            FileInputStream myInput = getFileInputStream();
+            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
 
             // Traversing over each row of XLSX file
             for (Row myRow : mySheet) {
@@ -114,16 +113,10 @@ public class ExcelChanges {
                     if (getCellAddress(scannedName, myCell)) break;
                 }
             }
+            myInput.close();
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
-    }
-
-    private XSSFSheet openExcelSheet() throws IOException {
-        InputStream myInput;
-        myInput = context.openFileInput("inventar.xlsx");
-        XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
-        return myWorkBook.getSheetAt(0);
     }
 
     private boolean getCellAddress(String scannedName, Cell myCell) {
