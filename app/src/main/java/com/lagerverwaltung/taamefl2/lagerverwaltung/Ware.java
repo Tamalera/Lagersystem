@@ -15,6 +15,18 @@ public class Ware {
         this.toBuy = checkfToBuy(threshold);
     }
 
+    public String getName(){
+        return name;
+    }
+
+    public int getNumber(){
+        return number;
+    }
+
+    public int getThreshold(){
+        return threshold;
+    }
+
     private Boolean checkfToBuy(int threshold) {
         return number == threshold;
     }

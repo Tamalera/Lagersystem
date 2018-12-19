@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
         final EditText nameInput = myPopup.findViewById(R.id.nameInput);
         final EditText numberInput = myPopup.findViewById(R.id.numberInput);
         final EditText thresholdInput = myPopup.findViewById(R.id.thresholdInput);
-        final EditText commentInput = myPopup.findViewById(R.id.commentInput);
 
         // set dialog message
         alertDialogBuilder
@@ -104,11 +103,10 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,int id) {
-                                //Todo: create Ware-Object
-                                Log.i("NAME: ", nameInput.getText().toString());
-                                Log.i("NUMBER: ", numberInput.getText().toString());
-                                Log.i("THRESHOLD: ", thresholdInput.getText().toString());
-                                Log.i("COMMENT: ", commentInput.getText().toString());
+                                Ware newWare = new Ware(nameInput.getText().toString(),
+                                        Integer.parseInt(numberInput.getText().toString()),
+                                        Integer.parseInt(thresholdInput.getText().toString()));
+                                myExcel.addNewEntry(newWare);
                             }
                         })
                 .setNegativeButton("Cancel",

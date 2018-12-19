@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +43,7 @@ public class ExcelChanges {
             }
             myInput.close();
             // Now write the output to a file
-            FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
-            myWorkBook.write(outFile);
-            outFile.close();
+            writeToExcelFile(myWorkBook);
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
@@ -62,18 +61,10 @@ public class ExcelChanges {
             }
             myInput.close();
             // Now write the output to a file
-            FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
-            myWorkBook.write(outFile);
-            outFile.close();
+            writeToExcelFile(myWorkBook);
         } catch (Exception e) {
             Log.e("ERROR: ", "error "+ e.toString());
         }
-    }
-
-    private FileInputStream getFileInputStream() throws FileNotFoundException {
-        FileInputStream myInput;
-        myInput = context.openFileInput("inventar.xlsx");
-        return myInput;
     }
 
     public List<String> getAllItemsForShopping(){
@@ -98,7 +89,35 @@ public class ExcelChanges {
         return shoppingList;
     }
 
-    public void addNewEntry() {
+    public void addNewEntry(Ware ware) {
+        try {
+            FileInputStream myInput = getFileInputStream();
+            XSSFWorkbook myWorkBook = new XSSFWorkbook (myInput);
+            XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+
+            //Save new row
+            Row newRow = mySheet.createRow(mySheet.getLastRowNum() + 1);
+            newRow.createCell(0).setCellValue(ware.getName());
+            newRow.createCell(1).setCellValue(ware.getNumber());
+            newRow.createCell(2).setCellValue(ware.getThreshold());
+
+            myInput.close();
+            writeToExcelFile(myWorkBook);
+        } catch (Exception e) {
+            Log.e("ERROR: ", "error "+ e.toString());
+        }
+    }
+
+    private FileInputStream getFileInputStream() throws FileNotFoundException {
+        FileInputStream myInput;
+        myInput = context.openFileInput("inventar.xlsx");
+        return myInput;
+    }
+
+    private void writeToExcelFile(XSSFWorkbook myWorkBook) throws IOException {
+        FileOutputStream outFile = new FileOutputStream(new File(context.getFilesDir() + "/inventar.xlsx"));
+        myWorkBook.write(outFile);
+        outFile.close();
     }
 
     private void searchWareInExcel(String scannedName) {
